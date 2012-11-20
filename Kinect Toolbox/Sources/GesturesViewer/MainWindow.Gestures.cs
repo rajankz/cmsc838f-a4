@@ -68,12 +68,28 @@ namespace GesturesViewer
                     TakeOffLandDrone();
                 break;
 
-                case "swipetoright":
+                case "lefttoright":
+                MoveDroneRight();
+                break;
+
+               case "righttoleft":
+                MoveDroneLeft();
+                break;
+
+               case "fronttoback":
+                MoveDroneBack();
+                break;
+
+               case "backtofront":
                 MoveDroneForward();
                 break;
 
-               case "swipetoleft":
-                MoveDroneBackward();
+               case "downtoup":
+                MoveDroneUp();
+                break;
+
+               case "uptodown":
+                MoveDroneDown();
                 break;
 
                 default:

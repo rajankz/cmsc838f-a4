@@ -46,6 +46,7 @@ namespace Kinect.Toolbox
 
         protected override void LookForGesture()
         {
+            /*
             // Swipe to right
             if (ScanPositions((p1, p2) => Math.Abs(p2.Y - p1.Y) < SwipeMaximalHeight, // Height
                 (p1, p2) => p2.X - p1.X > -0.01f, // Progression to right
@@ -65,6 +66,67 @@ namespace Kinect.Toolbox
                 RaiseGestureDetected("SwipeToLeft");
                 return;
             }
+
+            */
+
+            // From left to right
+            if (ScanPositions ((p1, p2) => Math.Abs(p2.Y - p1.Y) <0.20f, 
+               (p1, p2) => p2.X - p1.X> - 0.01f,
+               (p1, p2 ) =>   Math.Abs(p2.X - p1.X)> 0.2f, 250, 2500))
+            {
+                RaiseGestureDetected ("LeftToRight");
+                return;
+            }
+
+            // from right to left
+            if (ScanPositions ((p1, p2) => Math.Abs(p2.Y - p1.Y) <0.20f, 
+               (p1, p2) => p2.X - p1.X <0.01f, (p1, p2) => 
+               Math.Abs(p2.X - p1.X)> 0.2f, 250, 2500))
+            {
+                RaiseGestureDetected ("RightToLeft");
+                return;
+            }
+
+            // From down to up
+            if (ScanPositions((p1, p2) => Math.Abs(p2.X - p1.X) < 0.20f,
+               (p1, p2) => p2.Y - p1.Y > -0.01f,
+               (p1, p2) => Math.Abs(p2.Y - p1.Y) > 0.2f, 250, 2500))
+            {
+                RaiseGestureDetected("DownToUp");
+                return;
+            }
+
+            // from up to down
+            if (ScanPositions((p1, p2) => Math.Abs(p2.X - p1.X) < 0.20f,
+               (p1, p2) => p2.Y - p1.Y < 0.01f, (p1, p2) =>
+               Math.Abs(p2.Y - p1.Y) > 0.2f, 250, 2500))
+            {
+                RaiseGestureDetected("UpToDown");
+                return;
+            }
+
+            // From back to front
+            if (ScanPositions (
+                (p1, p2) => Math.Abs (p2.Y - p1.Y) <0.15f, 
+               (p1, p2) => p2.Z - p1.Z <0.01f, 
+               (p1, p2) => 
+                Math.Abs(p2.Z - p1.Z)> 0.2f, 250, 2500))
+            {
+                RaiseGestureDetected ("BackToFront");
+                return;
+            }
+
+            // from front to back
+            if (ScanPositions(
+                (p1, p2) => Math.Abs(p2.Y - p1.Y) <0.15f, 
+               (p1, p2) => p2.Z - p1.Z>-0.04f, 
+               (p1, p2 ) 
+                 => Math.Abs (p2.Z - p1.Z)> 0.4f, 250, 2500))
+            {
+                RaiseGestureDetected ("FrontToBack");
+                return;
+            }
+
         }
     }
 }

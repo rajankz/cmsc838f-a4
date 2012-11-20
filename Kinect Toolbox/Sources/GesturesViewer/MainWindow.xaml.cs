@@ -66,6 +66,7 @@ namespace GesturesViewer
 
         SwipeGestureDetector swipeGestureRecognizer;
         TemplatedGestureDetector circleGestureRecognizer;
+        PostureDetector tPostureDetector;
         readonly ColorStreamManager colorManager = new ColorStreamManager();
         readonly DepthStreamManager depthManager = new DepthStreamManager();
         AudioStreamManager audioManager;
@@ -102,7 +103,6 @@ namespace GesturesViewer
         private HudInterface hudInterface;
         private ARDrone.Input.InputManager inputManager;
         private Dictionary<String, DateTime> booleanInputFadeout;
-        private Boolean droneInAir;
         private String currentStatusMsg = "";
         private int count = 3;
 
@@ -153,13 +153,13 @@ namespace GesturesViewer
         {
             InitializeDroneControlEventHandlers();
 
-            InitializeTimers();
-            InitializeInputManager();
+            //InitializeTimers();
+            //InitializeInputManager();
 
-            InitializeAviationControls();
-            InitializeHudInterface();
+           /// InitializeAviationControls();
+            //InitializeHudInterface();
 
-            InitializeRecorders();
+            //InitializeRecorders();
         }
 
         private void InitializeDroneControlEventHandlers()
@@ -259,6 +259,9 @@ namespace GesturesViewer
 
         private void Connect()
         {
+            if (droneControl == null)
+                InitializeDroneControl();
+            
             if (droneControl.IsConnected) { return; }
 
             currentStatusMsg = "Connecting to the Drone...";
@@ -270,7 +273,7 @@ namespace GesturesViewer
         {
             if (!droneControl.IsConnected) { return; }
 
-            if (droneInAir)
+            if (droneControl.IsHovering && droneControl.IsFlying)
                 Land();
 
             //timerVideoUpdate.Stop();
@@ -281,7 +284,10 @@ namespace GesturesViewer
 
         private void Takeoff()
         {
-            if (droneInAir)
+            if (!droneControl.IsConnected)
+                Connect();
+            
+            if (droneControl.IsHovering && droneControl.IsFlying)
                 return;
 
             Command takeOffCommand = new FlightModeCommand(DroneFlightMode.TakeOff);
@@ -291,13 +297,12 @@ namespace GesturesViewer
             currentStatusMsg = "Initiating Drone take off..";
             droneControl.SendCommand(takeOffCommand);
             //Thread.Sleep(5000);
-            droneInAir = true;
             //UpdateUIAsync("Taking off");
         }
 
         private void Land()
         {
-            if (!droneInAir)
+            if (droneControl.IsFlying)
                 return;
 
             Command landCommand = new FlightModeCommand(DroneFlightMode.Land);
@@ -402,6 +407,9 @@ namespace GesturesViewer
             swipeGestureRecognizer = new SwipeGestureDetector();
             swipeGestureRecognizer.OnGestureDetected += OnGestureDetected;
 
+            tPostureDetector = new AlgorithmicPostureDetector();
+            tPostureDetector.PostureDetected += templatePostureDetector_PostureDetected;
+
             skeletonDisplayManager = new SkeletonDisplayManager(kinectSensor, kinectCanvas);
 
             kinectSensor.Start();
@@ -409,7 +417,7 @@ namespace GesturesViewer
             LoadCircleGestureDetector();
             LoadLetterTPostureDetector();
 
-            nuiCamera = new BindableNUICamera(kinectSensor);
+            //nuiCamera = new BindableNUICamera(kinectSensor);
 
             elevationSlider.DataContext = nuiCamera;
 
@@ -422,8 +430,11 @@ namespace GesturesViewer
 
             parallelCombinedGestureDetector = new ParallelCombinedGestureDetector();
             parallelCombinedGestureDetector.OnGestureDetected += OnGestureDetected;
-            parallelCombinedGestureDetector.Add(swipeGestureRecognizer);
             parallelCombinedGestureDetector.Add(circleGestureRecognizer);
+            parallelCombinedGestureDetector.Add(swipeGestureRecognizer);
+            
+            
+
         }
 
         void kinectSensor_DepthFrameReady(object sender, DepthImageFrameReadyEventArgs e)
@@ -706,7 +717,7 @@ namespace GesturesViewer
             }
             if(droneControl.IsConnected)
             {
-                if (droneInAir)
+                if (droneControl.IsHovering && droneControl.IsFlying)
                     Land();
                 else
                     Takeoff();
@@ -715,17 +726,49 @@ namespace GesturesViewer
 
         private void MoveDroneForward()
         {
-            if (droneInAir)
+            //if (droneControl.IsHovering && droneControl.IsFlying)
             {
-                Navigate(0, 0, 1, 0);
+                Navigate(0, -0.5f, 0, 0);
             }
         }
 
-        private void MoveDroneBackward()
+        private void MoveDroneBack()
         {
-            if (droneInAir)
+            //if (droneControl.IsHovering && droneControl.IsFlying)
             {
-                Navigate(0, 0, -1, 0);
+                Navigate(0, 0.5f, 0, 0);
+            }
+        }
+
+        private void MoveDroneRight()
+        {
+            //if (droneControl.IsHovering && droneControl.IsFlying)
+            {
+                Navigate(0.5f, 0, 0, 0);
+            }
+        }
+
+        private void MoveDroneLeft()
+        {
+            //if (droneControl.IsHovering && droneControl.IsFlying)
+            {
+                Navigate(-0.5f, 0, 0, 0);
+            }
+        }
+
+        private void MoveDroneUp()
+        {
+            //if (droneControl.IsHovering && droneControl.IsFlying)
+            {
+                Navigate(0, 0, 0, 0.5f);
+            }
+        }
+
+        private void MoveDroneDown()
+        {
+            //if (droneControl.IsHovering && droneControl.IsFlying)
+            {
+                Navigate(0, 0, 0, -0.5f);
             }
         }
 
